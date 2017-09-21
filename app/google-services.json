@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "587441499232",
+    "firebase_url": "https://recarga-transcaribe.firebaseio.com",
+    "project_id": "recarga-transcaribe",
+    "storage_bucket": "recarga-transcaribe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:587441499232:android:4480664615b15a2b",
+        "android_client_info": {
+          "package_name": "com.app.master.retenescartagena"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "587441499232-epm7j1q9k7vcd16ju6sjvoo1n7oso7uo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.master.retenescartagena",
+            "certificate_hash": "d1478c57b1ce233fea8474adda3ab4916fa02c52"
+          }
+        },
+        {
+          "client_id": "587441499232-utkvhmckf6vj4sq3nq1h0squrkuc5snm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMAxHjEwhyqVwwAFj1Hxjcl2PKKXnNAjY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "587441499232-utkvhmckf6vj4sq3nq1h0squrkuc5snm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
