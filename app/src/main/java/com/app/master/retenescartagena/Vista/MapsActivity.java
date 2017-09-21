@@ -59,7 +59,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     //Localizacion
-    
+
     public GoogleApiClient inicializarApiGps(){
         apiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
