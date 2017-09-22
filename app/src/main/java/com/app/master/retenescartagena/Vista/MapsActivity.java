@@ -10,9 +10,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
+import android.widget.Button;
 import android.widget.Toast;
 
+import com.app.master.retenescartagena.Presentador.PresentadorMapsActivity;
+import com.app.master.retenescartagena.Presentador.iPresentadorMapsActivity;
 import com.app.master.retenescartagena.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -32,18 +34,21 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.LatLngBounds;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks,LocationListener {
+public class MapsActivity extends FragmentActivity implements iMapsActivity, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener {
 
 
-    private static final int PETICION_PERMISO_LOCALIZACION =1;
+    private static final int PETICION_PERMISO_LOCALIZACION = 1;
     private GoogleMap mMap;
-    private static final int PETICION_CONFIG_UBICACION =21 ;
+    private static final int PETICION_CONFIG_UBICACION = 21;
     private static GoogleApiClient apiClient;
     private Activity actividad;
     private LocationRequest locRequest;
     private static Location location;
+    private Button btnReportarReten;
+    private iPresentadorMapsActivity presentador;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,20 +58,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        inicializarApiGps();
+        btnReportarReten=(Button) findViewById(R.id.btnReportarReten);
+        presentador=new PresentadorMapsActivity(this,this);
 
     }
 
 
     //Localizacion
-
-    public GoogleApiClient inicializarApiGps(){
+    @Override
+    public void inicializarApiGps() {
         apiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
                 .build();
-        return apiClient;
 
     }
 
@@ -75,12 +80,50 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        //
+        mMap.getUiSettings().setMapToolbarEnabled(false);
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        CameraPosition cameraPosition;
+        cameraPosition = new CameraPosition.Builder()
+                .target(new LatLng(10.4027901, -75.5146382))
+                .zoom(14)
+                .bearing(0)
+                .tilt(0)
+                .build();
+        CameraUpdate camara = CameraUpdateFactory.newCameraPosition(cameraPosition);
+        mMap.animateCamera(camara);
+
+        mMap.setMinZoomPreference(14f);
+        mMap.setMaxZoomPreference(18f);
+        presentador.inicializarMapa();
+        presentador.inicializarActualizacionLocalizacion();
     }
 
+    @Override
+    public void agregarLimitesMapa() {
+        LatLngBounds Cartagena = new LatLngBounds(
+                //10.4027901, -75.5156382
+                new LatLng(10.3027, -75.6156), new LatLng(10.6627, -75.4556));
+
+// Constrain the camera target to the Adelaide bounds.
+        mMap.setLatLngBoundsForCameraTarget(Cartagena);
+        try {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            mMap.setMyLocationEnabled(true);
+        }catch (Exception e){
+
+        }
+
+    }
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Toast.makeText(this, "Conexion Fallida a servicios Google Play", Toast.LENGTH_SHORT).show();
@@ -110,19 +153,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void actualizarUbicacion(Location loc){
         if (loc != null) {
-            Toast.makeText(this, "Latitud: " + String.valueOf(loc.getLatitude()), Toast.LENGTH_SHORT).show();
-            Toast.makeText(this, "Latitud: " + String.valueOf(loc.getLongitude()), Toast.LENGTH_SHORT).show();
-            Log.d("localizacion",String.valueOf(loc.getLatitude()));
             CameraPosition cameraPosition;
             cameraPosition = new CameraPosition.Builder()
                     .target(new LatLng(loc.getLatitude(), loc.getLongitude()))
-                    .zoom(14)
-                    .bearing(0)
-                    .tilt(0)
                     .build();
             CameraUpdate camara = CameraUpdateFactory.newCameraPosition(cameraPosition);
             mMap.animateCamera(camara);
-            LatLng posicion = new LatLng(loc.getLatitude(), loc.getLongitude());
 
 
         } else {
@@ -131,6 +167,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    @Override
     public void enableLocationUpdates() {
 
         locRequest = new LocationRequest();
@@ -155,7 +192,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 switch (status.getStatusCode()) {
                     case LocationSettingsStatusCodes.SUCCESS:
 
-                        Toast.makeText(MapsActivity.this, "Configuracion correcta", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(MapsActivity.this, "Configuracion correcta", Toast.LENGTH_SHORT).show();
                         startLocationUpdates();
                         break;
 
@@ -209,4 +246,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //mMap.setMyLocationEnabled(true);
         actualizarUbicacion(location);
     }
+
 }
