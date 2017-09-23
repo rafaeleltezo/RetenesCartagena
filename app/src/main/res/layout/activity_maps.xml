@@ -31,7 +31,7 @@ android:orientation="vertical">
                 android:id="@+id/btnReportarReten"
                 android:text="@string/btnReportarReten"/>
 
-                <!--android:layout_marginTop="@dimen/marginBotonRuta"-->
+                <!--android:layout_marginTop="@dimen/marginBotonRuta" ca-app-pub-5246970221791662~4955028301-->
 
 
         </LinearLayout>

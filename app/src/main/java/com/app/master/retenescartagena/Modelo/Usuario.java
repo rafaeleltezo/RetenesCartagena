@@ -5,25 +5,17 @@ package com.app.master.retenescartagena.Modelo;
  */
 
 public class Usuario {
-    private String token,fecha;
+    private String fecha;
     private double latitud,longitud;
 
-    public Usuario(String token, String fecha, double latitud, double longitud) {
-        this.token = token;
+    public Usuario( String fecha, double latitud, double longitud) {
+
         this.fecha = fecha;
         this.latitud = latitud;
         this.longitud = longitud;
     }
 
     public Usuario() {
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
     }
 
     public String getFecha() {

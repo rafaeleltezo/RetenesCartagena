@@ -5,17 +5,23 @@ import android.app.Activity;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.app.master.retenescartagena.Modelo.Usuario;
 import com.app.master.retenescartagena.Presentador.PresentadorMapsActivity;
 import com.app.master.retenescartagena.Presentador.iPresentadorMapsActivity;
 import com.app.master.retenescartagena.R;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -35,8 +41,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
-public class MapsActivity extends FragmentActivity implements iMapsActivity, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener {
+public class MapsActivity extends FragmentActivity implements iMapsActivity, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener, View.OnClickListener {
 
 
     private static final int PETICION_PERMISO_LOCALIZACION = 1;
@@ -48,6 +57,9 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
     private static Location location;
     private Button btnReportarReten;
     private iPresentadorMapsActivity presentador;
+    private Location localizacion;
+    private FirebaseDatabase database;
+    private InterstitialAd mInterstitialAd;
 
 
     @Override
@@ -60,9 +72,36 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         mapFragment.getMapAsync(this);
         btnReportarReten=(Button) findViewById(R.id.btnReportarReten);
         presentador=new PresentadorMapsActivity(this,this);
+        btnReportarReten.setOnClickListener(this);
+        database=FirebaseDatabase.getInstance();
+        mInterstitialAd=new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId("ca-app-pub-5246970221791662/6443547402");
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+        //tareaPublicidad tarea=new tareaPublicidad();
+        //tarea.execute();
 
     }
 
+    public Location getLocalizacion() {
+        return localizacion;
+    }
+
+    public void setLocalizacion(Location localizacion) {
+        this.localizacion = localizacion;
+    }
+
+    public void ejecutarTarea(){
+        tareaPublicidad tarea=new tareaPublicidad();
+        tarea.execute();
+    }
+
+    public void pausarHilo(){
+        try{
+            Thread.sleep(120000);
+        }catch (Exception e){
+
+        }
+    }
 
     //Localizacion
     @Override
@@ -153,6 +192,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
     public void actualizarUbicacion(Location loc){
         if (loc != null) {
+            setLocalizacion(location);
             CameraPosition cameraPosition;
             cameraPosition = new CameraPosition.Builder()
                     .target(new LatLng(loc.getLatitude(), loc.getLongitude()))
@@ -245,6 +285,58 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         }
         //mMap.setMyLocationEnabled(true);
         actualizarUbicacion(location);
+
     }
 
+    @Override
+    public void onClick(View v) {
+        if(v.getId()==btnReportarReten.getId()){
+            ingrearPuntocontrol();
+            if (mInterstitialAd.isLoaded()) {
+                mInterstitialAd.show();
+            } else {
+                Log.d("Mensaje", "No esta cargando la publicidad");
+            }
+        }
+    }
+
+    public void ingrearPuntocontrol(){
+        DatabaseReference referencia=database.getReference("Puntos de control");
+        if(FirebaseInstanceId.getInstance().getToken()!=null && getLocalizacion()!=null) {
+            referencia.child(FirebaseInstanceId.getInstance().getToken())
+                    .setValue(new Usuario("12/12/12", getLocalizacion().getLatitude(), getLocalizacion().getLongitude()));
+        }else {
+            Toast.makeText(this, "No se puede reportar punto de control", Toast.LENGTH_SHORT).show();
+        }
+
+
+    }
+    private class tareaPublicidad extends AsyncTask<Void,Integer,Boolean>{
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+
+            for (int i = 1; i <=4 ; i++) {
+                pausarHilo();
+
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            try {
+                ejecutarTarea();
+            }catch (Exception e){
+
+            }
+
+
+        }
+    }
 }
