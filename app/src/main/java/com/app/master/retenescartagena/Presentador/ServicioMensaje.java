@@ -25,7 +25,7 @@ public class ServicioMensaje extends FirebaseMessagingService  {
         PendingIntent pending=PendingIntent.getActivity(this,0,intento,PendingIntent.FLAG_ONE_SHOT);
         Uri sonido= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificacion=new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark)
+                .setSmallIcon(R.drawable.reten)
                 .setSound(sonido)
                 .setContentTitle("Retenes Cartagena")
                 .setContentText(remoteMessage.getNotification().getBody())
