@@ -1,12 +1,12 @@
 package com.app.master.retenescartagena.Vista;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.app.master.retenescartagena.Modelo.Coordenadas;
 import com.app.master.retenescartagena.Modelo.Usuario;
 import com.app.master.retenescartagena.Presentador.PresentadorMapsActivity;
 import com.app.master.retenescartagena.Presentador.iPresentadorMapsActivity;
@@ -52,7 +53,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
     private GoogleMap mMap;
     private static final int PETICION_CONFIG_UBICACION = 21;
     private static GoogleApiClient apiClient;
-    private Activity actividad;
+    //private Activity actividad;
     private LocationRequest locRequest;
     private static Location location;
     private Button btnReportarReten;
@@ -60,6 +61,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
     private Location localizacion;
     private FirebaseDatabase database;
     private InterstitialAd mInterstitialAd;
+    private CountDownTimer countDownTimer;
 
 
     @Override
@@ -77,9 +79,29 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         mInterstitialAd=new InterstitialAd(this);
         mInterstitialAd.setAdUnitId("ca-app-pub-5246970221791662/6443547402");
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
-        //tareaPublicidad tarea=new tareaPublicidad();
-        //tarea.execute();
+        contador();
+    }
 
+    public void contador(){
+       countDownTimer=new CountDownTimer(60000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                Toast.makeText(MapsActivity.this,String.valueOf(millisUntilFinished/1000), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFinish() {
+                publicidad();
+            }
+        }.start();
+    }
+    public void publicidad(){
+        if (mInterstitialAd.isLoaded()) {
+            mInterstitialAd.show();
+            contador();
+        } else {
+            Log.d("Mensaje", "No esta cargando la publicidad");
+        }
     }
 
     public Location getLocalizacion() {
@@ -121,7 +143,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
         //
         mMap.getUiSettings().setMapToolbarEnabled(false);
-        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         CameraPosition cameraPosition;
         cameraPosition = new CameraPosition.Builder()
                 .target(new LatLng(10.4027901, -75.5146382))
@@ -173,7 +195,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(actividad,
+            ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     PETICION_PERMISO_LOCALIZACION);
         } else {
@@ -192,7 +214,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
     public void actualizarUbicacion(Location loc){
         if (loc != null) {
-            setLocalizacion(location);
+            setLocalizacion(loc);
             CameraPosition cameraPosition;
             cameraPosition = new CameraPosition.Builder()
                     .target(new LatLng(loc.getLatitude(), loc.getLongitude()))
@@ -293,7 +315,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         if(v.getId()==btnReportarReten.getId()){
             ingrearPuntocontrol();
             if (mInterstitialAd.isLoaded()) {
-                mInterstitialAd.show();
+               mInterstitialAd.show();
             } else {
                 Log.d("Mensaje", "No esta cargando la publicidad");
             }
@@ -302,9 +324,14 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
     public void ingrearPuntocontrol(){
         DatabaseReference referencia=database.getReference("Puntos de control");
+
         if(FirebaseInstanceId.getInstance().getToken()!=null && getLocalizacion()!=null) {
-            referencia.child(FirebaseInstanceId.getInstance().getToken())
-                    .setValue(new Usuario("12/12/12", getLocalizacion().getLatitude(), getLocalizacion().getLongitude()));
+            DatabaseReference dato=referencia.child(FirebaseInstanceId.getInstance().getToken());
+            dato.setValue(new Usuario("121"));
+            dato.push().setValue(new Coordenadas(getLocalizacion().getLatitude(),getLocalizacion().getLongitude(),"rafa"));
+            referencia=database.getReference(FirebaseInstanceId.getInstance().getToken());
+            //referencia.push().setValue(new Coordenadas(getLocalizacion().getLatitude(),getLocalizacion().getLongitude(),"rafa"));
+
         }else {
             Toast.makeText(this, "No se puede reportar punto de control", Toast.LENGTH_SHORT).show();
         }
@@ -313,29 +340,16 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
     }
     private class tareaPublicidad extends AsyncTask<Void,Integer,Boolean>{
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
+
 
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            for (int i = 1; i <=4 ; i++) {
-                pausarHilo();
-
-            }
             return true;
         }
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
-            try {
-                ejecutarTarea();
-            }catch (Exception e){
-
-            }
-
 
         }
     }
