@@ -1,6 +1,7 @@
 package com.app.master.retenescartagena.Vista;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -22,6 +23,7 @@ import com.app.master.retenescartagena.Presentador.PresentadorMapsActivity;
 import com.app.master.retenescartagena.Presentador.iPresentadorMapsActivity;
 import com.app.master.retenescartagena.R;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -39,12 +41,25 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class MapsActivity extends FragmentActivity implements iMapsActivity, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener, View.OnClickListener {
 
@@ -62,28 +77,117 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
     private FirebaseDatabase database;
     private InterstitialAd mInterstitialAd;
     private CountDownTimer countDownTimer;
-
+    private CountDownTimer cuentaRegresiva;
+    private DatabaseReference dato;
+    private DatabaseReference referenciaPuntoControl;
+    private ArrayList<Coordenadas> coordenadas;
+    private ProgressDialog progreso;
+    private ArrayList<Coordenadas> coordenadaMisRetnees;
+    private AdView adview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         btnReportarReten=(Button) findViewById(R.id.btnReportarReten);
+        progreso=new ProgressDialog(this);
         presentador=new PresentadorMapsActivity(this,this);
+        coordenadaMisRetnees=new ArrayList();
+        coordenadas=new ArrayList();
         btnReportarReten.setOnClickListener(this);
         database=FirebaseDatabase.getInstance();
+        adview = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adview.loadAd(adRequest);
         mInterstitialAd=new InterstitialAd(this);
         mInterstitialAd.setAdUnitId("ca-app-pub-5246970221791662/6443547402");
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
-        contador();
+        //presentador.inicializarContadorPublicidad();
+        referenciaPuntoControl=database.getReference("Puntos de control");
+        dato=referenciaPuntoControl.child(FirebaseInstanceId.getInstance().getToken());
+        presentador.TareaTokenFirebase();
+        presentador.TareaMisRetenes();
+        contadorLlenarMapa();
+
+    }
+    public ArrayList<Coordenadas> retenesCartagena(){
+        ArrayList<Coordenadas> coor=new ArrayList();
+
+        for (Coordenadas c:obtenerCoordenadasReten()) {
+            int contador=0;
+                    for (Coordenadas cs:obtenerCoordenadasReten()){
+                        if(c.getLatitud()==cs.getLatitud() && c.getLongitud()==cs.getLongitud()){
+                          contador++;
+                        }
+                        if(contador>=2){
+                            coor.add(c);
+                        }
+                    }
+            }
+
+        HashSet<Coordenadas> hashSet = new HashSet<Coordenadas>(coor);
+        coor.clear();
+        coor.addAll(hashSet);
+        contadorLlenarMapa();
+            return coor;
     }
 
-    public void contador(){
-       countDownTimer=new CountDownTimer(60000, 1000) {
+    @Override
+    public void TareaMisRetenes(){
+        TareaMisPuntoControl tarea= new TareaMisPuntoControl();
+        tarea.execute();
+    }
+
+    public ArrayList<Coordenadas> obtenerCoordenadasReten(){
+        return coordenadas;
+
+    }
+
+    public void TareaTokenFirebase(){
+        Tarea t=new Tarea();
+        t.execute();
+    }
+
+    public ArrayList<Coordenadas> getCoordenadaMisRetnees() {
+        return coordenadaMisRetnees;
+    }
+
+
+    private void AgregarFechaFirebase(DatabaseReference referencia){
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+        String formattedDate = df.format(c.getTime());
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("fecha",new Usuario(formattedDate));
+        dato.updateChildren(result);
+        //dato.setValue(new Usuario(formattedDate));
+    }
+
+    public void contadorLlenarMapa(){
+        cuentaRegresiva=new CountDownTimer(9000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                //Toast.makeText(MapsActivity.this, String.valueOf(millisUntilFinished/1000), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFinish() {
+                mMap.clear();
+                for (Coordenadas c:retenesCartagena()) {
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(c.getLatitud(), c.getLongitud())).title("Reten" ).icon(BitmapDescriptorFactory.fromResource(R.drawable.reten)));
+                    //Toast.makeText(MapsActivity.this, String.valueOf(c.getLatitud()), Toast.LENGTH_SHORT).show();
+                }
+            }
+        }.start();
+    }
+
+    @Override
+    public void contadorPublicidad(){
+       countDownTimer=new CountDownTimer(9000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 Toast.makeText(MapsActivity.this,String.valueOf(millisUntilFinished/1000), Toast.LENGTH_SHORT).show();
@@ -91,6 +195,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
             @Override
             public void onFinish() {
+
                 publicidad();
             }
         }.start();
@@ -98,10 +203,10 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
     public void publicidad(){
         if (mInterstitialAd.isLoaded()) {
             mInterstitialAd.show();
-            contador();
         } else {
             Log.d("Mensaje", "No esta cargando la publicidad");
         }
+        presentador.inicializarContadorPublicidad();
     }
 
     public Location getLocalizacion() {
@@ -112,18 +217,8 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         this.localizacion = localizacion;
     }
 
-    public void ejecutarTarea(){
-        tareaPublicidad tarea=new tareaPublicidad();
-        tarea.execute();
-    }
 
-    public void pausarHilo(){
-        try{
-            Thread.sleep(120000);
-        }catch (Exception e){
 
-        }
-    }
 
     //Localizacion
     @Override
@@ -212,7 +307,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         Toast.makeText(this, "Conexion Suspendida", Toast.LENGTH_SHORT).show();
     }
 
-    public void actualizarUbicacion(Location loc){
+    private void actualizarUbicacion(Location loc){
         if (loc != null) {
             setLocalizacion(loc);
             CameraPosition cameraPosition;
@@ -234,7 +329,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
         locRequest = new LocationRequest();
         locRequest.setInterval(60000);
-        locRequest.setFastestInterval(30000);
+        locRequest.setFastestInterval(60000);
         locRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         LocationSettingsRequest locSettingsRequest =
@@ -310,47 +405,157 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
     }
 
+    public Boolean CompararcoordenadaReten(){
+        for (Coordenadas coordena:getCoordenadaMisRetnees()) {
+            DecimalFormat df = new DecimalFormat("#.000");
+            String latitudActual=df.format(getLocalizacion().getLatitude());
+            String longitudActual=df.format(getLocalizacion().getLongitude());
+            String latitudFirebase=df.format(coordena.getLatitud());
+            String longitudFirebase=df.format(coordena.getLongitud());
+
+            if(latitudActual.equals(latitudFirebase)&&longitudActual.equals(longitudFirebase)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void onClick(View v) {
         if(v.getId()==btnReportarReten.getId()){
-            ingrearPuntocontrol();
-            if (mInterstitialAd.isLoaded()) {
-               mInterstitialAd.show();
-            } else {
-                Log.d("Mensaje", "No esta cargando la publicidad");
+
+                if(CompararcoordenadaReten()){
+                    Toast.makeText(this, "Reten ya fue registrado", Toast.LENGTH_SHORT).show();
+                }else {
+                    presentador.ingresarPuntoControl();
+
+                }
+
             }
-        }
+
     }
 
+    @Override
     public void ingrearPuntocontrol(){
-        DatabaseReference referencia=database.getReference("Puntos de control");
+
 
         if(FirebaseInstanceId.getInstance().getToken()!=null && getLocalizacion()!=null) {
-            DatabaseReference dato=referencia.child(FirebaseInstanceId.getInstance().getToken());
-            dato.setValue(new Usuario("121"));
-            dato.push().setValue(new Coordenadas(getLocalizacion().getLatitude(),getLocalizacion().getLongitude(),"rafa"));
-            referencia=database.getReference(FirebaseInstanceId.getInstance().getToken());
+            Calendar calendario = new GregorianCalendar();
+            int hora, minutos, segundos;
+            hora =calendario.get(Calendar.HOUR_OF_DAY);
+            minutos = calendario.get(Calendar.MINUTE);
+            segundos = calendario.get(Calendar.SECOND);
+            String horas=String.valueOf(hora)+":"+String.valueOf(minutos)+":"+String.valueOf(segundos);
+            double latitud=Math.round(getLocalizacion().getLatitude() * 1000d) / 1000d;
+            double longitud=Math.round(getLocalizacion().getLongitude() * 1000d) / 1000d;
+            dato.push().setValue(new Coordenadas(latitud,longitud,horas));
+            //referencia=database.getReference(FirebaseInstanceId.getInstance().getToken());
             //referencia.push().setValue(new Coordenadas(getLocalizacion().getLatitude(),getLocalizacion().getLongitude(),"rafa"));
-
+            Toast.makeText(this, "Reten registrado satisfactoriamente", Toast.LENGTH_SHORT).show();
         }else {
-            Toast.makeText(this, "No se puede reportar punto de control", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No se pudo registrar reten", Toast.LENGTH_SHORT).show();
         }
 
 
     }
-    private class tareaPublicidad extends AsyncTask<Void,Integer,Boolean>{
+
+    private class Tarea extends AsyncTask<Void,Void,Void>{
 
 
 
         @Override
-        protected Boolean doInBackground(Void... params) {
-
-            return true;
+        protected void onPreExecute() {
+            progreso.setMessage("Cargando retenes");
+            progreso.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progreso.show();
         }
 
         @Override
-        protected void onPostExecute(Boolean aBoolean) {
+        protected Void doInBackground(Void... params) {
+            coordenadas.clear();
+            referenciaPuntoControl.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
+                    for (DataSnapshot data:dataSnapshot.getChildren()) {
+                        for (DataSnapshot dat:data.getChildren()) {
+                            Coordenadas coordenas=dat.getValue(Coordenadas.class);
+
+                            coordenadas.add(coordenas);
+
+                            //Toast.makeText(MapsActivity.this,String.valueOf(coordenas.getLatitud()), Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+
+            referenciaPuntoControl.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                    AgregarFechaFirebase(referenciaPuntoControl);
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+            return null;
         }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            progreso.dismiss();
+        }
+    }
+    private class TareaMisPuntoControl extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            coordenadaMisRetnees.clear();
+            DatabaseReference datosMisretenes=database.getReference("Puntos de control/"+FirebaseInstanceId.getInstance().getToken());
+            datosMisretenes.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot s:dataSnapshot.getChildren()) {
+                        Coordenadas coordena=s.getValue(Coordenadas.class);
+                        //Toast.makeText(MapsActivity.this, "Hola", Toast.LENGTH_SHORT).show();
+
+                        coordenadaMisRetnees.add(coordena);
+                        //Toast.makeText(MapsActivity.this,String.valueOf(coordena.getLatitud()), Toast.LENGTH_SHORT).show();
+                        /*
+                        DecimalFormat df = new DecimalFormat("#.000");
+                        String latitudActual=df.format(getLocalizacion().getLatitude());
+                        String longitudActual=df.format(getLocalizacion().getLongitude());
+                        String latitudFirebase=df.format(coordena.getLatitud());
+                        String longitudFirebase=df.format(coordena.getLongitud());
+                        if(latitudActual.equals(latitudFirebase)&&longitudActual.equals(longitudFirebase)){
+
+                            verdad[0] =true;
+                            break;
+                        }*/
+
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Toast.makeText(MapsActivity.this, "Error al conectar al servidor", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            return null;
+        }
+
     }
 }

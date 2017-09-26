@@ -2,4 +2,5 @@
     <string name="app_name">Retenes Cartagena</string>
     <string name="title_activity_maps">Map</string>
     <string name="btnReportarReten">Reportar reten</string>
+    <string name="idBaner">ca-app-pub-5246970221791662/4952557678</string>
 </resources>

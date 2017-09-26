@@ -8,6 +8,9 @@ public interface iMapsActivity {
      void inicializarApiGps();
      void agregarLimitesMapa();
      void enableLocationUpdates();
-
+     void ingrearPuntocontrol();
+     void contadorPublicidad();
+     void TareaTokenFirebase();
+     void TareaMisRetenes();
 
 }

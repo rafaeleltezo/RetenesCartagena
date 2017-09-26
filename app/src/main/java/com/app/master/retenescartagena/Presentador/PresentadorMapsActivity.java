@@ -32,6 +32,27 @@ public class PresentadorMapsActivity implements iPresentadorMapsActivity {
         tarea.execute();
     }
 
+    @Override
+    public void ingresarPuntoControl() {
+        actividad.ingrearPuntocontrol();
+    }
+
+    @Override
+    public void inicializarContadorPublicidad() {
+        actividad.contadorPublicidad();
+    }
+
+    @Override
+    public void TareaTokenFirebase() {
+        actividad.TareaTokenFirebase();
+    }
+
+    @Override
+    public void TareaMisRetenes() {
+        actividad.TareaMisRetenes();
+    }
+
+
     private class TareaActivarLocalizacion extends AsyncTask<Void,Void,Void>{
 
         @Override

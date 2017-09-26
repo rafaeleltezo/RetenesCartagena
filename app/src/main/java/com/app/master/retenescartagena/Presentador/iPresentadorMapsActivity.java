@@ -7,4 +7,8 @@ package com.app.master.retenescartagena.Presentador;
 public interface iPresentadorMapsActivity {
     void inicializarMapa();
     void inicializarActualizacionLocalizacion();
+    void ingresarPuntoControl();
+    void inicializarContadorPublicidad();
+    void TareaTokenFirebase();
+    void TareaMisRetenes();
 }
