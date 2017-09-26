@@ -178,7 +178,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
             public void onFinish() {
                 mMap.clear();
                 for (Coordenadas c:retenesCartagena()) {
-                    mMap.addMarker(new MarkerOptions().position(new LatLng(c.getLatitud(), c.getLongitud())).title("Reten" ).icon(BitmapDescriptorFactory.fromResource(R.drawable.reten)));
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(c.getLatitud(), c.getLongitud())).title("Reten" ).icon(BitmapDescriptorFactory.fromResource(R.drawable.estrella)));
                     //Toast.makeText(MapsActivity.this, String.valueOf(c.getLatitud()), Toast.LENGTH_SHORT).show();
                 }
             }
