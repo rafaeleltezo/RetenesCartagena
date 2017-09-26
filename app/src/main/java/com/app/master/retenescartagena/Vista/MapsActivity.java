@@ -100,9 +100,6 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         coordenadas=new ArrayList();
         btnReportarReten.setOnClickListener(this);
         database=FirebaseDatabase.getInstance();
-        adview = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        adview.loadAd(adRequest);
         mInterstitialAd=new InterstitialAd(this);
         mInterstitialAd.setAdUnitId("ca-app-pub-5246970221791662/6443547402");
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
@@ -112,6 +109,9 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         presentador.TareaTokenFirebase();
         presentador.TareaMisRetenes();
         contadorLlenarMapa();
+        adview = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adview.loadAd(adRequest);
 
     }
     public ArrayList<Coordenadas> retenesCartagena(){
@@ -338,6 +338,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
                         .build();
 
 
+
         PendingResult<LocationSettingsResult> result =
                 LocationServices.SettingsApi.checkLocationSettings(
                         apiClient, locSettingsRequest);
@@ -357,6 +358,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
                         try {
                             Toast.makeText(MapsActivity.this, "Active GPS para ubicar paraderos cercanos", Toast.LENGTH_SHORT).show();
                             status.startResolutionForResult(MapsActivity.this, PETICION_CONFIG_UBICACION);
+
                         } catch (IntentSender.SendIntentException e) {
                             Toast.makeText(MapsActivity.this, "Error al intentar solucionar configuración de ubicación", Toast.LENGTH_SHORT).show();
 
@@ -372,6 +374,8 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
             }
         });
     }
+
+
     private void startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -423,13 +427,17 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
     @Override
     public void onClick(View v) {
         if(v.getId()==btnReportarReten.getId()){
-
+            try {
                 if(CompararcoordenadaReten()){
                     Toast.makeText(this, "Reten ya fue registrado", Toast.LENGTH_SHORT).show();
                 }else {
                     presentador.ingresarPuntoControl();
 
                 }
+            }catch (Exception e){
+
+            }
+
 
             }
 
