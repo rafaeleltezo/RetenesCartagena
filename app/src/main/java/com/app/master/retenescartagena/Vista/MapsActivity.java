@@ -2,6 +2,7 @@ package com.app.master.retenescartagena.Vista;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -14,7 +15,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.app.master.retenescartagena.Modelo.Coordenadas;
@@ -22,6 +22,7 @@ import com.app.master.retenescartagena.Modelo.Usuario;
 import com.app.master.retenescartagena.Presentador.PresentadorMapsActivity;
 import com.app.master.retenescartagena.Presentador.iPresentadorMapsActivity;
 import com.app.master.retenescartagena.R;
+import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
@@ -61,7 +62,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class MapsActivity extends FragmentActivity implements iMapsActivity, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener, View.OnClickListener {
+public class MapsActivity extends FragmentActivity implements iMapsActivity, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener, View.OnClickListener{
 
 
     private static final int PETICION_PERMISO_LOCALIZACION = 1;
@@ -71,7 +72,6 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
     //private Activity actividad;
     private LocationRequest locRequest;
     private static Location location;
-    private Button btnReportarReten;
     private iPresentadorMapsActivity presentador;
     private Location localizacion;
     private FirebaseDatabase database;
@@ -84,6 +84,8 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
     private ProgressDialog progreso;
     private ArrayList<Coordenadas> coordenadaMisRetnees;
     private AdView adview;
+    private FloatingActionButton reportarReten;
+    private FloatingActionButton picoPlaca;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,25 +95,33 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        btnReportarReten=(Button) findViewById(R.id.btnReportarReten);
+        reportarReten=(FloatingActionButton)findViewById(R.id.btnReten);
+        picoPlaca=(FloatingActionButton)findViewById(R.id.btnPicoPlaca);
         progreso=new ProgressDialog(this);
         presentador=new PresentadorMapsActivity(this,this);
         coordenadaMisRetnees=new ArrayList();
         coordenadas=new ArrayList();
-        btnReportarReten.setOnClickListener(this);
+        reportarReten.setOnClickListener(this);
+        picoPlaca.setOnClickListener(this);
         database=FirebaseDatabase.getInstance();
         mInterstitialAd=new InterstitialAd(this);
         mInterstitialAd.setAdUnitId("ca-app-pub-5246970221791662/6443547402");
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
         //presentador.inicializarContadorPublicidad();
         referenciaPuntoControl=database.getReference("Puntos de control");
-        dato=referenciaPuntoControl.child(FirebaseInstanceId.getInstance().getToken());
-        presentador.TareaTokenFirebase();
-        presentador.TareaMisRetenes();
-        contadorLlenarMapa();
+        try {
+            dato = referenciaPuntoControl.child(FirebaseInstanceId.getInstance().getToken());
+            presentador.TareaTokenFirebase();
+            presentador.TareaMisRetenes();
+            contadorLlenarMapa();
+        }catch (Exception e){
+            Toast.makeText(this, "Error Al conectar al servidor, intente mas tarde", Toast.LENGTH_SHORT).show();
+        }
+
         adview = (AdView) findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adview.loadAd(adRequest);
+
 
     }
     public ArrayList<Coordenadas> retenesCartagena(){
@@ -324,6 +334,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         }
     }
 
+
     @Override
     public void enableLocationUpdates() {
 
@@ -364,10 +375,8 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
                         }
                         break;
-
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         Toast.makeText(MapsActivity.this, "No se puede cumplir la configuración de ubicación necesaria", Toast.LENGTH_SHORT).show();
-
 
                         break;
                 }
@@ -426,7 +435,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
     @Override
     public void onClick(View v) {
-        if(v.getId()==btnReportarReten.getId()){
+        if(v.getId()==reportarReten.getId()){
             try {
                 if(CompararcoordenadaReten()){
                     Toast.makeText(this, "Reten ya fue registrado", Toast.LENGTH_SHORT).show();
@@ -435,11 +444,14 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
                 }
             }catch (Exception e){
-
+                Toast.makeText(this, "Error, reinicie la app", Toast.LENGTH_SHORT).show();
             }
 
 
-            }
+            }else if(v.getId()==picoPlaca.getId()){
+            Intent i=new Intent(MapsActivity.this,PicoyPlaca.class);
+            startActivity(i);
+        }
 
     }
 
@@ -466,6 +478,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
 
     }
+
 
     private class Tarea extends AsyncTask<Void,Void,Void>{
 

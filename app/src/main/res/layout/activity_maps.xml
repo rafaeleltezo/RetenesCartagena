@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
 xmlns:map="http://schemas.android.com/apk/res-auto"
 xmlns:ads="http://schemas.android.com/apk/res-auto"
 xmlns:tools="http://schemas.android.com/tools"
@@ -25,11 +26,7 @@ android:orientation="vertical">
             android:layout_gravity="top|left"
             android:orientation="horizontal">
             <!--android:layout_marginBottom="@dimen/botonFlotante"-->
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/btnReportarReten"
-                android:text="@string/btnReportarReten"/>
+
 
                 <!--android:layout_marginTop="@dimen/marginBotonRuta" ca-app-pub-5246970221791662~4955028301-->
 
@@ -41,6 +38,38 @@ android:orientation="vertical">
             android:layout_gravity="bottom|right"
             android:orientation="vertical"
             android:layout_marginBottom="12dp">
+
+            <com.getbase.floatingactionbutton.FloatingActionsMenu
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnMenu"
+                android:layout_margin="16dp"
+                android:elevation="12dp"
+                android:layout_gravity="right"
+                app:fab_addButtonColorNormal="@color/colorPrimary"
+                app:fab_labelStyle="@style/diseñoMenu">
+
+                <com.getbase.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnReten"
+                    app:fab_icon="@drawable/reten"
+                    app:fab_title="Reportar Reten"
+                    app:fab_colorNormal="@color/colorPrimaryDark"
+                    app:fab_size="mini"
+
+
+                    />
+                <com.getbase.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnPicoPlaca"
+                    app:fab_icon="@drawable/estrella"
+                    app:fab_title="Pico y Placa"
+                    app:fab_colorNormal="@color/colorAccent"
+                    app:fab_size="mini"
+                    />
+            </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
             <com.google.android.gms.ads.AdView
                 xmlns:ads="http://schemas.android.com/apk/res-auto"
