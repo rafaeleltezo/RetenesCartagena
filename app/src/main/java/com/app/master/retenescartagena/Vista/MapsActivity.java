@@ -13,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -86,17 +87,18 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
     private AdView adview;
     private FloatingActionButton reportarReten;
     private FloatingActionButton picoPlaca;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         reportarReten=(FloatingActionButton)findViewById(R.id.btnReten);
         picoPlaca=(FloatingActionButton)findViewById(R.id.btnPicoPlaca);
+        toolbar=(Toolbar)findViewById(R.id.toolbar);
         progreso=new ProgressDialog(this);
         presentador=new PresentadorMapsActivity(this,this);
         coordenadaMisRetnees=new ArrayList();
@@ -188,7 +190,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
             public void onFinish() {
                 mMap.clear();
                 for (Coordenadas c:retenesCartagena()) {
-                    mMap.addMarker(new MarkerOptions().position(new LatLng(c.getLatitud(), c.getLongitud())).title("Reten" ).icon(BitmapDescriptorFactory.fromResource(R.drawable.estrella)));
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(c.getLatitud(), c.getLongitud())).title("Reten Aproximado" ).icon(BitmapDescriptorFactory.fromResource(R.drawable.police)));
                     //Toast.makeText(MapsActivity.this, String.valueOf(c.getLatitud()), Toast.LENGTH_SHORT).show();
                 }
             }
@@ -197,10 +199,10 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
 
     @Override
     public void contadorPublicidad(){
-       countDownTimer=new CountDownTimer(9000, 1000) {
+       countDownTimer=new CountDownTimer(900000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                Toast.makeText(MapsActivity.this,String.valueOf(millisUntilFinished/1000), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MapsActivity.this,String.valueOf(millisUntilFinished/1000), Toast.LENGTH_SHORT).show();
             }
 
             @Override

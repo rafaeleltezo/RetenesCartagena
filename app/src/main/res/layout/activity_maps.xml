@@ -1,11 +1,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-xmlns:map="http://schemas.android.com/apk/res-auto"
-xmlns:ads="http://schemas.android.com/apk/res-auto"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:orientation="vertical">
+    xmlns:map="http://schemas.android.com/apk/res-auto"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:theme="@style/App">
+
+   <include
+       layout="@layout/toolbar"
+       android:id="@+id/toolbar"/>
+
 
 
 <FrameLayout
@@ -30,8 +36,8 @@ android:orientation="vertical">
 
                 <!--android:layout_marginTop="@dimen/marginBotonRuta" ca-app-pub-5246970221791662~4955028301-->
 
-
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -53,7 +59,7 @@ android:orientation="vertical">
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/btnReten"
-                    app:fab_icon="@drawable/reten"
+                    app:fab_icon="@drawable/police"
                     app:fab_title="Reportar Reten"
                     app:fab_colorNormal="@color/colorPrimaryDark"
                     app:fab_size="mini"
@@ -64,7 +70,7 @@ android:orientation="vertical">
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/btnPicoPlaca"
-                    app:fab_icon="@drawable/estrella"
+                    app:fab_icon="@drawable/placa"
                     app:fab_title="Pico y Placa"
                     app:fab_colorNormal="@color/colorAccent"
                     app:fab_size="mini"

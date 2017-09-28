@@ -1,34 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/container"
+    android:orientation="vertical"
     tools:context="com.app.master.retenescartagena.Vista.PicoyPlaca">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/txtPicoPlacaMoto"
-        android:text="Pico y placa Motos"
-        android:layout_centerHorizontal="true"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/txtinfoMoto"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/txtPicoPlacaMoto"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Vehículos Particulares"
-        android:id="@+id/txtPicoPlaca"
-        android:layout_below="@+id/txtinfoMoto"
-        android:layout_centerHorizontal="true" />
-    <ImageView
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+    <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/picoyplacaparticulares"
-        android:layout_below="@+id/txtPicoPlaca"/>
+        android:id="@+id/cartamoto"
+        android:layout_margin="12dp">
 
-</RelativeLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/motorcycle"
+                android:layout_margin="4dp"/>
+
+                <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/txtPicoPlacaMoto"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerHorizontal="true"
+                                android:text="Motorizados"
+                                android:textStyle="bold"
+                                android:textSize="@dimen/tamañoTitulo"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/txtinfoMoto"
+                                android:text="No hay conecion a internet"
+                                android:layout_centerHorizontal="true"
+                                android:layout_below="@id/txtPicoPlacaMoto" />
+                </LinearLayout>
+        </LinearLayout>
+
+
+
+    </android.support.v7.widget.CardView>
+
+
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/cartaParticular"
+        android:layout_margin="12dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/car"
+                android:layout_margin="4dp"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Vehículos Particulares"
+                    android:id="@+id/txtPicoPlaca"
+                    android:layout_below="@+id/txtinfoMoto"
+                    android:layout_centerHorizontal="true"
+                    android:textStyle="bold"
+                    android:textSize="@dimen/tamañoTitulo"/>
+                <ImageButton
+                    android:id="@+id/thumb_button_1"
+                    android:layout_width="492dp"
+                    android:layout_height="217dp"
+                    android:layout_marginRight="1dp"
+                    android:src="@drawable/picoyplacaparticulares"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="ddescripcion" />
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="invisible"
+                    android:id="@+id/imgPicoyPlaca"
+                    android:layout_below="@+id/txtPicoPlaca"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+        </LinearLayout>
+    </ScrollView>
+
+
+</LinearLayout>
