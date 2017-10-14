@@ -16,6 +16,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.app.master.retenescartagena.Modelo.Coordenadas;
@@ -59,6 +60,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,6 +90,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
     private FloatingActionButton reportarReten;
     private FloatingActionButton picoPlaca;
     private Toolbar toolbar;
+    private Button eliminar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +99,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        eliminar=(Button)findViewById(R.id.eliminar);
         reportarReten=(FloatingActionButton)findViewById(R.id.btnReten);
         picoPlaca=(FloatingActionButton)findViewById(R.id.btnPicoPlaca);
         toolbar=(Toolbar)findViewById(R.id.toolbar);
@@ -104,6 +108,7 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
         coordenadaMisRetnees=new ArrayList();
         coordenadas=new ArrayList();
         reportarReten.setOnClickListener(this);
+        eliminar.setOnClickListener(this);
         picoPlaca.setOnClickListener(this);
         database=FirebaseDatabase.getInstance();
         mInterstitialAd=new InterstitialAd(this);
@@ -193,6 +198,24 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
                     mMap.addMarker(new MarkerOptions().position(new LatLng(c.getLatitud(), c.getLongitud())).title("Reten Aproximado" ).icon(BitmapDescriptorFactory.fromResource(R.drawable.police)));
                     //Toast.makeText(MapsActivity.this, String.valueOf(c.getLatitud()), Toast.LENGTH_SHORT).show();
                 }
+                DatabaseReference dato=database.getReference("retenes personales");
+                dato.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot coordenada:dataSnapshot.getChildren()) {
+                            Coordenadas c=coordenada.getValue(Coordenadas.class);
+                            mMap.addMarker(new MarkerOptions().position(new LatLng(c.getLatitud(), c.getLongitud())).title("Reten Confirmado" ).icon(BitmapDescriptorFactory.fromResource(R.drawable.police)));
+
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(MapsActivity.this, "Error al conectarse al servidor", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
             }
         }.start();
     }
@@ -453,6 +476,52 @@ public class MapsActivity extends FragmentActivity implements iMapsActivity, OnM
             }else if(v.getId()==picoPlaca.getId()){
             Intent i=new Intent(MapsActivity.this,PicoyPlaca.class);
             startActivity(i);
+        }
+
+
+        if(v.getId()==eliminar.getId()){
+            final DatabaseReference dato=database.getReference("Puntos de control");
+
+            dato.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for(DataSnapshot d:dataSnapshot.getChildren()){
+                        for(DataSnapshot ds:d.getChildren()){
+                            Coordenadas co=ds.getValue(Coordenadas.class);
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("H:m:s");
+                            try {
+                                Date horaReportado= dateFormat.parse(co.getHora());
+
+                                Calendar calendario = new GregorianCalendar();
+                                int hora, minutos, segundos;
+                                hora =calendario.get(Calendar.HOUR_OF_DAY);
+                                minutos = calendario.get(Calendar.MINUTE);
+                                segundos = calendario.get(Calendar.SECOND);
+                                String horas=String.valueOf(hora)+":"+String.valueOf(minutos)+":"+String.valueOf(segundos);
+
+                                Date horaActual=dateFormat.parse(horas);
+
+                                int diferencia=(int) ((horaActual.getTime()-horaReportado.getTime())/1000);
+                                int hor=(int)Math.floor(diferencia/3600);
+
+                                //Toast.makeText(MapsActivity.this, "han pasado "+String.valueOf(hor), Toast.LENGTH_SHORT).show();
+
+                                if(hor>=1){
+                                    database.getReference("Puntos de control/"+d.getKey()+"/"+ds.getKey()).removeValue();
+                                }
+
+                            } catch (Exception e) {
+                                Toast.makeText(MapsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Toast.makeText(MapsActivity.this, "No se pudo conectar a firebase rafa", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
     }
