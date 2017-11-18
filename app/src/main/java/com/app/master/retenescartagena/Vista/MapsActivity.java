@@ -65,7 +65,8 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class MapsActivity extends FragmentActivity implements iMapsActivity, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener, View.OnClickListener{
+public class MapsActivity extends FragmentActivity implements iMapsActivity, OnMapReadyCallback,
+        GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener, View.OnClickListener{
 
 
     private static final int PETICION_PERMISO_LOCALIZACION = 1;
